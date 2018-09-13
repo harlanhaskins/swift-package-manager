@@ -486,8 +486,10 @@ func xcodeProject(
                 hdrInclPaths.append("$(SRCROOT)/" + systemTarget.path.relative(to: sourceRootDir).asString)
                 if let pkgArgs = pkgConfigArgs(for: systemTarget, diagnostics: diagnostics) {
                     targetSettings.common.OTHER_LDFLAGS += pkgArgs.libs
-                    targetSettings.common.OTHER_SWIFT_FLAGS += pkgArgs.cFlags
                     targetSettings.common.OTHER_CFLAGS += pkgArgs.cFlags
+
+                    // Prefix each C flag with -Xcc so they are passed to the Swift clang importer
+                    targetSettings.common.OTHER_SWIFT_FLAGS += pkgArgs.cFlags.flatMap { ["-Xcc", $0] }
                 }
             case let clangTarget as ClangTarget:
                 hdrInclPaths.append("$(SRCROOT)/" + clangTarget.includeDir.relative(to: sourceRootDir).asString)
